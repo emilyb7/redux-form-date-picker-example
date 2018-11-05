@@ -6,46 +6,38 @@ import { reduxForm, Form, Field, reducer as formReducer } from "redux-form";
 
 import "./App.css";
 
-const store = createStore((state = {}, action) => {
-  return { form: formReducer(state.form, action) };
-});
+const DatePickerComponent = ({ input: { onChange, name, value } }) => {
+  return <DatePicker name={name} onChange={onChange} value={value} />;
+};
 
-class DatePickerComponent extends Component {
-  onChange = value => {
-    this.props.input.onChange(value);
-  };
-
-  render = () => {
-    const { name } = this.props;
-
-    return (
-      <DatePicker
-        name={name}
-        onChange={this.onChange}
-        value={this.props.input.value}
-      />
-    );
-  };
-}
-
-const AppForm = () => {
+const AppForm = ({ handleSubmit }) => {
   return (
-    <Form onSubmit={() => {}}>
-      <Field component={DatePickerComponent} name="field" />
+    <Form
+      onSubmit={handleSubmit(values => {
+        console.log("form submitted with values: ", values);
+        return null;
+      })}
+    >
+      <Field component={DatePickerComponent} name="date" />
+      <button type="submit">Submit</button>
     </Form>
   );
 };
 
-const Wrapped = reduxForm({ form: "app" })(AppForm);
+const validator = ({ date }) => (date ? null : { date: "error" });
+
+const Wrapped = reduxForm({ form: "app", validate: validator })(AppForm);
+
+const store = createStore((state = {}, action) => {
+  return { form: formReducer(state.form, action) };
+});
 
 class App extends Component {
   render() {
     return (
       <Provider store={store}>
         <div className="App">
-          <header className="App-header">
-            <Wrapped />
-          </header>
+          <Wrapped />
         </div>
       </Provider>
     );
